@@ -1,3 +1,4 @@
+
 var Comment = React.createClass({
   rawMarkup: function() {
     var md = new Remarkable();
@@ -8,37 +9,46 @@ var Comment = React.createClass({
   render: function() {
     return (
       <div className="comment">
-        <h2 className="commentAuthor">
-          {this.props.author}
-        </h2>
         <span dangerouslySetInnerHTML={this.rawMarkup()} />
       </div>
     );
   }
 });
 
-var CommentList = React.createClass({
+var CommentAuthorRow = React.createClass({
   render: function() {
-    var commentNodes = this.props.data.map(function(comment) {
-      return (
-        <Comment author={comment.author} key={comment.id}>
-          {comment.text}
-        </Comment>
-      );
-    });
+    let comments = [];
+    this.props.data.forEach( function(comment) {
+      if (comment.author === this.props.author) {
+        comments.push(
+          <Comment author={comment.author} key={comment.id}>
+            {comment.text}
+          </Comment>
+        );
+      }
+    }.bind(this));
     return (
-      <div className="commentList">
-        {commentNodes}
-      </div>
+     <div className="CommentAuthorRow">
+      <h2>{this.props.author}</h2>
+      {comments}
+     </div>
     );
   }
 });
 
-var CommentForm = React.createClass({
+var CommentList = React.createClass({
   render: function() {
+    let groups = [];
+    let GroupAuthor = [];
+    this.props.data.forEach(function(comment) {
+      if (GroupAuthor.indexOf(comment.author) === -1 ) {
+        groups.push(<CommentAuthorRow author={comment.author} key={comment.author} data={this.props.data} />);
+      }
+      GroupAuthor.push(comment.author);
+    }.bind(this));
     return (
-      <div className="commentForm">
-        Hello, world! I am a CommentForm.
+      <div className="commentList">
+        {groups}
       </div>
     );
   }
@@ -137,9 +147,7 @@ var CommentBox = React.createClass({
   }
 });
 
-
-
 ReactDOM.render(
-  <CommentBox url="/api/comments" pollInterval={2000} />,
+  <CommentBox url="/api/comments" pollInterval={10000} />,
   document.getElementById('content')
 );
